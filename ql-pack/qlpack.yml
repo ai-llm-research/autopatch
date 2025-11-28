@@ -1,0 +1,8 @@
+---
+library: false
+warnOnImplicitThis: false
+compileForOverlayEval: false
+name: ql-pack
+version: 0.0.1
+dependencies:
+  codeql/cpp-all: "*"

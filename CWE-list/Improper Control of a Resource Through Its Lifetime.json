@@ -1,0 +1,9 @@
+{
+    "supplementary_code": "#include <stdio.h>\n#include <string.h>",
+    "target_code": "void processFile(const char *filename) {\n    FILE *file = fopen(filename, \"r\");\n    if (!file) return;\n\n    char buffer[100];\n    if (fgets(buffer, sizeof(buffer), file) == NULL) {\n        // Forgot to close file on error\n        return; // Resource leak\n    }\n\n    printf(\"First line: %s\\n\", buffer);\n    fclose(file);\n}",
+    "vuln_patch": "void processFile(const char *filename) {\n    FILE *file = fopen(filename, \"r\");\n    if (!file) return;\n\n    char buffer[100];\n    if (fgets(buffer, sizeof(buffer), file) == NULL) {\n        fclose(file); // Proper cleanup on error\n        return;\n    }\n\n    printf(\"First line: %s\\n\", buffer);\n    fclose(file);\n}",
+    "cwe_type": "Improper Control of a Resource Through Its Lifetime",
+    "verification_cot": "The function processFile opens a file and attempts to read from it. If reading fails, the function returns without closing the file, leading to a resource leak. The vulnerability is due to improper control of the file resource's lifetime, as the file is not closed on error.",
+    "root_cause": "The root cause of the vulnerability is the missing fclose(file); call in the error handling path of the fgets function, leading to a resource leak.",
+    "patch_cot": "The vulnerability in the Target Code is due to improper resource management, specifically a missing fclose(file); call in the error handling path of the fgets function. To patch this, we need to ensure that the file is closed in all execution paths, including error paths. This is achieved by adding fclose(file); immediately after the fgets check and before the return statement, ensuring the file is closed even if fgets fails, thus preventing a resource leak."
+}

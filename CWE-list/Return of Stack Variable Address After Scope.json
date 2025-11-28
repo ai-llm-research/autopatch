@@ -1,0 +1,9 @@
+{
+    "supplementary_code": "#include <stdio.h>\n#include <stdlib.h>",
+    "target_code": "int* returnStackVar() {\n    int value = 42;\n    // Return address of local variable \u2014 dangerous\n    return &value;\n}\n\nvoid useReturnedAddress() {\n    int *ptr = returnStackVar();\n    printf(\"Value: %d\\n\", *ptr); // Undefined behavior\n}",
+    "vuln_patch": "int* returnHeapVar() {\n    int *value = (int *)malloc(sizeof(int));\n    if (!value) return NULL;\n    *value = 42;\n    return value;\n}\n\nvoid useReturnedAddress() {\n    int *ptr = returnHeapVar();\n    if (ptr) {\n        printf(\"Value: %d\\n\", *ptr); // Safe operation\n        free(ptr);\n    } else {\n        printf(\"Memory allocation failed.\\n\");\n    }\n}",
+    "cwe_type": "Return of Stack Variable Address After Scope",
+    "verification_cot": "The function returnStackVar returns the address of a local stack variable 'value'. Once the function returns, the stack frame is destroyed, making the returned pointer a dangling pointer. Accessing this pointer results in undefined behavior as the memory location may be overwritten.",
+    "root_cause": "The root cause is returning the address of a local stack variable, which becomes invalid after the function's stack frame is destroyed, leading to a dangling pointer.",
+    "patch_cot": "The vulnerability in the target code is due to returning the address of a local stack variable, which becomes invalid after the function exits, leading to a dangling pointer. To patch this, we replace the stack allocation with heap allocation using malloc, ensuring the memory remains valid after the function exits. The patched code allocates memory on the heap for an integer, checks for successful allocation, and returns the heap address. After use, the allocated memory is freed to prevent memory leaks."
+}
